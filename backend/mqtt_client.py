@@ -23,6 +23,7 @@ logger = logging.getLogger("mqtt_client")
 
 _client: Optional[object] = None   # paho.mqtt.client.Client
 _connected: bool = False
+_latest_fall_alert: Optional[dict] = None  # 缓存最新跌倒告警
 
 
 # ── 公开接口 ─────────────────────────────────────────
@@ -99,6 +100,11 @@ def publish_command(cmd: DeviceCommand) -> dict:
     return result
 
 
+def get_latest_fall_alert() -> Optional[dict]:
+    """返回最新缓存的跌倒告警，无告警时返回 None"""
+    return _latest_fall_alert
+
+
 def is_connected() -> bool:
     return _connected
 
@@ -112,13 +118,21 @@ def _on_connect(client, userdata, flags, reason_code, properties):
     logger.info("MQTT %s: %s", "connected" if _connected else "connect failed", connack_string(reason_code))
     if _connected:
         client.subscribe(config.MQTT_TOPIC_STATUS, qos=0)
-        logger.info("Subscribed to %s", config.MQTT_TOPIC_STATUS)
+        client.subscribe(config.MQTT_TOPIC_FALL_ALERT, qos=0)
+        logger.info("Subscribed to %s, %s", config.MQTT_TOPIC_STATUS, config.MQTT_TOPIC_FALL_ALERT)
 
 
 def _on_message(client, userdata, msg):
+    global _latest_fall_alert
     payload = msg.payload.decode("utf-8", errors="replace")
     logger.info("MQTT received ← %s: %s", msg.topic, payload)
-    # 后续可在此处解析 C 板状态回执并更新 device_state
+
+    if msg.topic == config.MQTT_TOPIC_FALL_ALERT:
+        try:
+            _latest_fall_alert = json.loads(payload)
+            logger.info("Fall alert cached: %s", _latest_fall_alert)
+        except json.JSONDecodeError:
+            logger.warning("Invalid fall alert JSON: %s", payload)
 
 
 def _on_disconnect(client, userdata, flags, reason_code, properties):

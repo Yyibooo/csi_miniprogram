@@ -52,6 +52,21 @@ export interface DeviceStateResponse {
   device_state: DeviceState
 }
 
+// ── 跌倒告警类型（与后端 FallAlert 模型对应）─────────
+
+export interface FallAlert {
+  detected: boolean
+  confidence: number
+  duration_seconds: number
+  timestamp: string | null
+  device_id: string
+}
+
+export interface FallAlertResponse {
+  ok: boolean
+  alert: FallAlert | null
+}
+
 // ── 通用请求封装 ─────────────────────────────────────
 
 function request<T>(options: WechatMiniprogram.RequestOption): Promise<T> {
@@ -98,4 +113,9 @@ export function sendSwitch(
       source: 'wechat_miniprogram',
     },
   })
+}
+
+/** 获取最新跌倒告警 */
+export function getFallAlert(): Promise<FallAlertResponse> {
+  return request<FallAlertResponse>({ url: '/api/device/fall', method: 'GET' })
 }

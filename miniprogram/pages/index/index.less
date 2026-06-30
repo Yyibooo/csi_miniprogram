@@ -1,259 +1,650 @@
-/* CSI 实时监测控制面板 — 深色科技风 */
+/* CSI 跌倒检测监测页 — 白色医疗健康风 */
 
-/* ── 全局基调 ───────────────────────── */
 page {
-  background: linear-gradient(160deg, #0f172a 0%, #1a2740 40%, #0f1d2e 100%);
+  background: #f2f5f3;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #17211d;
 }
 
 .page {
-  padding: 0 32rpx 60rpx;
+  padding: 0 34rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* ── 顶部标题 ───────────────────────── */
-.header {
-  width: 100%;
-  padding: 80rpx 0 48rpx;
-  text-align: center;
-}
+/* ── Hero Card ──────────────────────────── */
 
-.header-title {
-  font-size: 52rpx;
-  font-weight: 700;
-  color: #f1f5f9;
-  letter-spacing: 4rpx;
-}
-
-.header-subtitle {
-  font-size: 26rpx;
-  color: #64748b;
-  margin-top: 12rpx;
-  letter-spacing: 2rpx;
-}
-
-/* ── 状态环形指示器 ─────────────────── */
-.status-ring-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20rpx 0 48rpx;
-}
-
-.status-ring {
+.hero {
   position: relative;
-  width: 280rpx;
-  height: 280rpx;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ring-outer {
   width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* 休眠状态 */
-.status-ring.idle .ring-outer {
-  background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-  border: 4rpx solid #334155;
-  box-shadow:
-    0 0 0 12rpx rgba(51, 65, 85, 0.15),
-    0 0 40rpx rgba(0, 0, 0, 0.4);
-}
-
-/* 监测中状态 */
-.status-ring.active .ring-outer {
-  background: radial-gradient(circle, #064e3b 0%, #022c22 60%, #0f172a 100%);
-  border: 4rpx solid #10b981;
-  box-shadow:
-    0 0 0 12rpx rgba(16, 185, 129, 0.12),
-    0 0 60rpx rgba(16, 185, 129, 0.25),
-    0 0 120rpx rgba(16, 185, 129, 0.08);
-}
-
-.ring-glow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-
-.ring-glow.active {
-  opacity: 1;
-  animation: pulse-ring 2s ease-in-out infinite;
-}
-
-@keyframes pulse-ring {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 32rpx rgba(16, 185, 129, 0);
-    transform: scale(1.04);
-  }
-}
-
-.ring-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
-}
-
-.ring-icon {
-  font-size: 64rpx;
-  color: #f1f5f9;
-  transition: color 0.4s ease;
-}
-
-.status-ring.active .ring-icon {
-  color: #34d399;
-  animation: icon-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes icon-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.ring-label {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-top: 8rpx;
-  transition: color 0.4s ease;
-}
-
-.status-ring.active .ring-label {
-  color: #6ee7b7;
-}
-
-.status-hint {
-  font-size: 24rpx;
-  color: #475569;
-  margin-top: 32rpx;
-  letter-spacing: 1rpx;
-  transition: color 0.4s ease;
-}
-
-/* ── 控制卡片 ───────────────────────── */
-.control-card {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-  border: 1rpx solid rgba(51, 65, 85, 0.5);
-  border-radius: 24rpx;
-  padding: 36rpx 40rpx;
+  overflow: hidden;
+  padding: 38rpx 36rpx 34rpx;
+  border: 1rpx solid rgba(25, 53, 41, 0.06);
+  border-radius: 46rpx;
+  background: #fff;
+  box-shadow: 0 28rpx 68rpx rgba(38, 61, 51, 0.07);
   margin-bottom: 24rpx;
-  backdrop-filter: blur(20rpx);
 }
 
-.control-row {
+.hero.hero-alert {
+  border-color: rgba(237, 93, 85, 0.11);
+  background: linear-gradient(180deg, #fff 0%, #fffafa 100%);
+}
+
+.hero-topline {
+  position: relative;
+  z-index: 2;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.control-left {
-  display: flex;
-  flex-direction: column;
-}
-
-.control-label {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #e2e8f0;
-  margin-bottom: 6rpx;
-}
-
-.control-desc {
-  font-size: 24rpx;
-  color: #64748b;
-  line-height: 1.4;
-}
-
-/* ── 信息卡片 ───────────────────────── */
-.info-card {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
-  border: 1rpx solid rgba(51, 65, 85, 0.35);
-  border-radius: 24rpx;
-  padding: 12rpx 40rpx;
-  margin-bottom: 36rpx;
-}
-
-.info-row {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 28rpx 0;
+  gap: 24rpx;
 }
 
-.info-divider {
-  height: 1rpx;
-  background: rgba(51, 65, 85, 0.3);
+.eyebrow {
+  color: #8b9690;
+  font-size: 20rpx;
+  font-weight: 700;
 }
 
-.info-label {
-  font-size: 28rpx;
-  color: #94a3b8;
-}
-
-.info-value {
-  font-size: 26rpx;
-  color: #cbd5e1;
-  max-width: 380rpx;
-  text-align: right;
-  word-break: break-all;
-}
-
-.info-value.mono {
-  font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;
-  font-size: 22rpx;
-  color: #64748b;
-}
-
-.info-status {
-  display: flex;
+.live-pill {
+  display: inline-flex;
   align-items: center;
   gap: 12rpx;
+  padding: 12rpx 18rpx;
+  color: #0f7f5e;
+  font-size: 20rpx;
+  font-weight: 760;
+  border-radius: 24rpx;
+  background: #eaf8f2;
 }
 
-.dot {
-  width: 14rpx;
-  height: 14rpx;
+.live-pill-alert {
+  color: #c9413a;
+  background: #fff0ef;
+}
+
+.live-dot {
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 50%;
-  flex-shrink: 0;
+  background: currentColor;
+  box-shadow: 0 0 0 8rpx rgba(26, 168, 121, 0.11);
 }
 
-.dot.online {
-  background: #10b981;
-  box-shadow: 0 0 10rpx rgba(16, 185, 129, 0.6);
+.live-pill-alert .live-dot {
+  box-shadow: 0 0 0 8rpx rgba(237, 93, 85, 0.12);
 }
 
-.dot.offline {
-  background: #ef4444;
-  box-shadow: 0 0 10rpx rgba(239, 68, 68, 0.4);
+/* ── Gauge ──────────────────────────────── */
+
+.gauge-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-top: 2rpx;
+  height: 410rpx;
 }
 
-/* ── 底部提示 ───────────────────────── */
-.footer {
+.gauge-center-content {
+  display: grid;
+  place-items: center;
   text-align: center;
-  padding: 20rpx 0;
 }
 
-.footer-text {
+/* 雷达图标（正常态）*/
+.radar-icon {
+  position: relative;
+  width: 86rpx;
+  height: 86rpx;
+  margin-bottom: 16rpx;
+  border: 2rpx solid rgba(26, 168, 121, 0.22);
+  border-radius: 50%;
+}
+
+.radar-ring {
+  position: absolute;
+  border: 2rpx solid rgba(26, 168, 121, 0.28);
+  border-radius: 50%;
+}
+
+.radar-ring.r1 {
+  inset: 14rpx;
+}
+
+.radar-ring.r2 {
+  inset: 30rpx;
+}
+
+.radar-dot {
+  position: absolute;
+  inset: 38rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: #1aa879;
+}
+
+/* 跌倒人物图标（告警态）*/
+.radar-alert {
+  display: grid;
+  place-items: center;
+  border-color: rgba(237, 93, 85, 0.22);
+  color: #ed5d55;
+}
+
+.radar-alert .radar-ring {
+  display: none;
+}
+
+.radar-alert .radar-dot {
+  display: none;
+}
+
+.fall-person {
+  position: relative;
+  width: 60rpx;
+  height: 48rpx;
+  transform: rotate(36deg);
+}
+
+.fall-head {
+  position: absolute;
+  top: 2rpx;
+  left: 22rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.fall-body {
+  position: absolute;
+  top: 20rpx;
+  left: 18rpx;
+  width: 38rpx;
+  height: 16rpx;
+  border: 8rpx solid currentColor;
+  border-radius: 14rpx 0 0 14rpx;
+  border-right: 0;
+}
+
+.gauge-title {
+  font-size: 40rpx;
+  font-weight: 790;
+  line-height: 1.2;
+}
+
+.hero-alert .gauge-title {
+  color: #c9413a;
+}
+
+.gauge-desc {
+  margin-top: 12rpx;
+  color: #8c9791;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+/* ── Signal Wave ────────────────────────── */
+
+.signal-wave {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  height: 50rpx;
+  padding: 0 14rpx;
+  border-radius: 18rpx;
+  background: #f7faf8;
+  margin-top: 4rpx;
+}
+
+.signal-wave-alert {
+  background: #fff4f3;
+}
+
+.wave-bar {
+  flex: 1 1 0;
+  min-width: 4rpx;
+  border-radius: 8rpx;
+  background: #86d4bd;
+  transition: height 0.3s ease;
+}
+
+.signal-wave-alert .wave-bar {
+  background: #f49a93;
+}
+
+/* ── Alert Banner ───────────────────────── */
+
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+  width: 100%;
+  margin-bottom: 20rpx;
+  padding: 26rpx;
+  color: #c9413a;
+  border: 1rpx solid #ffdcd9;
+  border-radius: 34rpx;
+  background: #fff0ef;
+}
+
+.alert-badge {
+  display: grid;
+  width: 68rpx;
+  height: 68rpx;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 22rpx;
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 850;
+  background: #ed5d55;
+}
+
+.alert-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.alert-title {
+  display: block;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.alert-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  color: #b96863;
+  font-size: 18rpx;
+  font-weight: 600;
+}
+
+.alert-time {
+  color: #c9413a;
+  font-size: 20rpx;
+  font-weight: 780;
+  flex: 0 0 auto;
+}
+
+/* ── Action Buttons ─────────────────────── */
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  width: 100%;
+  margin-bottom: 20rpx;
+}
+
+.action-btn {
+  min-height: 84rpx;
+  border: 0;
+  border-radius: 28rpx;
+  font-size: 20rpx;
+  font-weight: 760;
+  line-height: 84rpx;
+  padding: 0;
+}
+
+.action-safe {
+  color: #0f7f5e;
+  background: #eaf8f2;
+}
+
+.action-contact {
+  color: #fff;
+  background: #ed5d55;
+}
+
+/* ── WeChat Note ────────────────────────── */
+
+.wechat-note {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  width: 100%;
+  margin-bottom: 20rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx solid rgba(25, 53, 41, 0.05);
+  border-radius: 30rpx;
+  background: #fff;
+}
+
+.wechat-logo {
+  position: relative;
+  display: grid;
+  width: 62rpx;
+  height: 62rpx;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 20rpx;
+  color: #fff;
+  background: #18b85b;
+}
+
+.chat-bubble {
+  position: relative;
+  width: 36rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.chat-bubble::before {
+  content: "";
+  position: absolute;
+  right: 2rpx;
+  bottom: -4rpx;
+  width: 10rpx;
+  height: 10rpx;
+  background: currentColor;
+  transform: rotate(25deg);
+}
+
+.wechat-note-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wechat-note-title {
+  display: block;
+  font-size: 20rpx;
+  font-weight: 700;
+}
+
+.wechat-note-sub {
+  display: block;
+  margin-top: 6rpx;
+  color: #9aa39f;
+  font-size: 16rpx;
+  font-weight: 600;
+}
+
+.check-mark {
+  display: grid;
+  width: 40rpx;
+  height: 40rpx;
+  place-items: center;
+  color: #fff;
+  font-size: 22rpx;
+  border-radius: 50%;
+  background: #18b85b;
+  flex: 0 0 auto;
+}
+
+/* ── Summary Cards ──────────────────────── */
+
+.summary-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+  width: 100%;
+  margin-bottom: 24rpx;
+}
+
+.summary-card {
+  position: relative;
+  min-height: 172rpx;
+  padding: 26rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(25, 53, 41, 0.05);
+  border-radius: 34rpx;
+  background: #fff;
+}
+
+.summary-icon {
+  display: grid;
+  width: 56rpx;
+  height: 56rpx;
+  place-items: center;
+  border-radius: 18rpx;
+}
+
+.summary-icon-blue {
+  color: #4e78e8;
+  background: #eef3ff;
+}
+
+.summary-icon-green {
+  color: #1aa879;
+  background: #eaf8f2;
+}
+
+.mini-signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 4rpx;
+  width: 30rpx;
+  height: 26rpx;
+}
+
+.ms-bar {
+  width: 5rpx;
+  border-radius: 4rpx;
+  background: currentColor;
+}
+
+/* 时钟图标 */
+.clock-icon {
+  position: relative;
+  width: 30rpx;
+  height: 30rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.clock-hand {
+  position: absolute;
+  top: 6rpx;
+  left: 50%;
+  width: 3rpx;
+  height: 10rpx;
+  border-radius: 2rpx;
+  background: currentColor;
+  transform: translateX(-50%) rotate(-34deg);
+  transform-origin: bottom;
+}
+
+.summary-label {
+  position: absolute;
+  top: 30rpx;
+  left: 98rpx;
+  color: #98a19d;
+  font-size: 18rpx;
+  font-weight: 650;
+}
+
+.summary-value {
+  margin-top: 20rpx;
+  font-size: 34rpx;
+  font-weight: 790;
+}
+
+.summary-unit {
+  margin-left: 6rpx;
+  color: #a3aca7;
+  font-size: 18rpx;
+  font-weight: 600;
+}
+
+/* ── Section Title ──────────────────────── */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 18rpx;
+  font-size: 26rpx;
+  font-weight: 770;
+}
+
+.section-link {
+  color: #98a19d;
+  font-size: 18rpx;
+  font-weight: 650;
+}
+
+/* ── Device Card ────────────────────────── */
+
+.device-card {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  width: 100%;
+  padding: 24rpx 26rpx;
+  border: 1rpx solid rgba(25, 53, 41, 0.05);
+  border-radius: 36rpx;
+  background: #fff;
+  margin-bottom: 24rpx;
+}
+
+.device-visual {
+  display: grid;
+  width: 90rpx;
+  height: 90rpx;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 28rpx;
+  background: #eef7f3;
+}
+
+.router-icon {
+  position: relative;
+  width: 46rpx;
+  height: 28rpx;
+  border: 4rpx solid #0f7f5e;
+  border-radius: 10rpx;
+}
+
+.router-antenna {
+  position: absolute;
+  top: -20rpx;
+  left: 20rpx;
+  width: 4rpx;
+  height: 18rpx;
+  border-radius: 4rpx;
+  background: #0f7f5e;
+}
+
+.router-led {
+  position: absolute;
+  right: 6rpx;
+  bottom: 6rpx;
+  width: 6rpx;
+  height: 6rpx;
+  border-radius: 50%;
+  background: #1aa879;
+  box-shadow: -12rpx 0 0 #9adfc9;
+}
+
+.device-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.device-name {
+  display: block;
   font-size: 24rpx;
-  color: #475569;
-  letter-spacing: 1rpx;
+  font-weight: 700;
+}
+
+.device-sub {
+  display: block;
+  margin-top: 8rpx;
+  overflow: hidden;
+  color: #98a19d;
+  font-size: 18rpx;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.online-state {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #0f7f5e;
+  font-size: 18rpx;
+  font-weight: 750;
+  flex: 0 0 auto;
+}
+
+.online-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #1aa879;
+}
+
+/* ── Power Button ───────────────────────── */
+
+.power-area {
+  display: grid;
+  place-items: center;
+  margin-top: 26rpx;
+}
+
+.power-button {
+  position: relative;
+  display: grid;
+  width: 136rpx;
+  height: 136rpx;
+  padding: 0;
+  place-items: center;
+  border: 14rpx solid #e7f4ef;
+  border-radius: 50%;
+  color: #fff;
+  background: #1aa879;
+  box-shadow: 0 18rpx 48rpx rgba(26, 168, 121, 0.28);
+}
+
+.power-button::after {
+  border: none;
+}
+
+.power-button.power-alert {
+  border-color: #f8e3e1;
+  background: #ed5d55;
+  box-shadow: 0 18rpx 48rpx rgba(237, 93, 85, 0.25);
+}
+
+.power-symbol {
+  position: relative;
+  width: 42rpx;
+  height: 42rpx;
+  border: 5rpx solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+
+.power-symbol::before {
+  content: "";
+  position: absolute;
+  top: -8rpx;
+  left: 50%;
+  width: 5rpx;
+  height: 22rpx;
+  border-radius: 4rpx;
+  background: currentColor;
+  transform: translateX(-50%);
+}
+
+.power-caption {
+  margin-top: 14rpx;
+  color: #8b9590;
+  font-size: 18rpx;
+  font-weight: 650;
+}
+
+/* ── Bottom Safe Area ───────────────────── */
+
+.bottom-safe {
+  height: 200rpx;
 }

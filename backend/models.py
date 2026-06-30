@@ -59,6 +59,22 @@ class DeviceStateResponse(BaseModel):
     device_state: DeviceState
 
 
+# ── 跌倒告警 ────────────────────────────────────────
+
+class FallAlert(BaseModel):
+    """跌倒检测告警（fall_detector → MQTT → 后端缓存 → 小程序轮询）"""
+    detected: bool = False
+    confidence: float = 0.0
+    duration_seconds: float = 0.0
+    timestamp: Optional[str] = None
+    device_id: str = "esp32s3_c_csi_2s_001"
+
+
+class FallAlertResponse(BaseModel):
+    ok: bool = True
+    alert: Optional[FallAlert] = None
+
+
 class SwitchResponse(BaseModel):
     ok: bool = True
     recognized: bool = True

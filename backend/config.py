@@ -17,6 +17,7 @@ MQTT_CLIENT_ID = "backend_control_001"
 # ── MQTT Topics（与 C 板约定）────────────────────────
 MQTT_TOPIC_CONTROL = "esp32s3/control"  # 后端 → C 板：控制命令
 MQTT_TOPIC_STATUS = "esp32s3/status"    # C 板 → 后端：状态回执
+MQTT_TOPIC_FALL_ALERT = "esp32s3/fall_alert"  # fall_detector → 后端：跌倒告警
 
 # ── 功能开关 ───────────────────────────────────────
 # 若 Mosquitto 暂未就绪，可设为 False，后端仍可接收小程序开关信号，

@@ -1,63 +1,130 @@
-<!-- CSI 实时监测控制面板 -->
-<view class="page">
-  <!-- 顶部标题区 -->
-  <view class="header">
-    <view class="header-title">CSI 实时监测</view>
-    <view class="header-subtitle">ESP32-S3 设备控制面板</view>
+<view class="page" style="padding-top: {{statusBarHeight + 20}}px">
+  <!-- Hero Card -->
+  <view class="hero {{isAlert ? 'hero-alert' : ''}}">
+    <view class="hero-topline">
+      <text class="eyebrow">客厅监测区</text>
+      <view class="live-pill {{isAlert ? 'live-pill-alert' : ''}}">
+        <view class="live-dot"></view>
+        <text>{{isAlert ? '紧急事件' : '实时监测中'}}</text>
+      </view>
+    </view>
+
+    <view class="gauge-wrap">
+      <gauge-ring progress="{{gaugeProgress}}" color="{{gaugeColor}}" bgColor="#edf2ef">
+        <view class="gauge-center-content">
+          <!-- 雷达图标（正常态） -->
+          <view wx:if="{{!isAlert}}" class="radar-icon">
+            <view class="radar-ring r1"></view>
+            <view class="radar-ring r2"></view>
+            <view class="radar-dot"></view>
+          </view>
+          <!-- 跌倒人物图标（告警态） -->
+          <view wx:if="{{isAlert}}" class="radar-icon radar-alert">
+            <view class="fall-person">
+              <view class="fall-head"></view>
+              <view class="fall-body"></view>
+            </view>
+          </view>
+          <text class="gauge-title">{{isAlert ? '检测到跌倒' : '设备运行中'}}</text>
+          <text class="gauge-desc">{{isAlert ? '系统正在持续确认' : '环境状态平稳'}}</text>
+        </view>
+      </gauge-ring>
+    </view>
+
+    <!-- 信号波 -->
+    <view class="signal-wave {{isAlert ? 'signal-wave-alert' : ''}}">
+      <view
+        wx:for="{{[6,9,13,8,17,11,20,10,15,7,12,19,9,14,6,11,16,8,13,6]}}"
+        wx:key="index"
+        class="wave-bar"
+        style="height: {{isAlert ? ([5,8,18,7,22,9,16,6,20,11,7,21,8,16,5,13,19,8,14,6][index]) : item}}px"
+      ></view>
+    </view>
   </view>
 
-  <!-- 状态环形指示器 -->
-  <view class="status-ring-container">
-    <view class="status-ring {{monitoring ? 'active' : 'idle'}}">
-      <view class="ring-outer">
-        <view class="ring-glow {{monitoring ? 'active' : ''}}"></view>
-        <view class="ring-inner">
-          <text class="ring-icon">{{monitoring ? '◉' : '○'}}</text>
-          <text class="ring-label">{{monitoring ? '监测中' : '已休眠'}}</text>
+  <!-- 告警横幅 -->
+  <view wx:if="{{isAlert}}" class="alert-banner">
+    <view class="alert-badge">!</view>
+    <view class="alert-info">
+      <text class="alert-title">疑似跌倒 · 已持续 {{alertDuration}} 秒</text>
+      <text class="alert-subtitle">客厅监测设备 CSI-01 · 置信度 {{alertConfidence}}%</text>
+    </view>
+    <text class="alert-time">{{alertTimestamp}}</text>
+  </view>
+
+  <!-- 告警操作按钮 -->
+  <view wx:if="{{isAlert}}" class="action-row">
+    <button class="action-btn action-safe" bindtap="onConfirmSafe">确认安全</button>
+    <button class="action-btn action-contact" bindtap="onContactFamily">联系家人</button>
+  </view>
+
+  <!-- 微信提醒已发送 -->
+  <view wx:if="{{isAlert}}" class="wechat-note">
+    <view class="wechat-logo">
+      <view class="chat-bubble"></view>
+    </view>
+    <view class="wechat-note-text">
+      <text class="wechat-note-title">微信紧急提醒已发送</text>
+      <text class="wechat-note-sub">通知 3 位已绑定联系人</text>
+    </view>
+    <view class="check-mark">✓</view>
+  </view>
+
+  <!-- 摘要卡片 -->
+  <view class="summary-row">
+    <view class="summary-card">
+      <view class="summary-icon summary-icon-blue">
+        <view class="mini-signal">
+          <view class="ms-bar" style="height:4px"></view>
+          <view class="ms-bar" style="height:7px"></view>
+          <view class="ms-bar" style="height:10px"></view>
+          <view class="ms-bar" style="height:13px"></view>
         </view>
       </view>
+      <text class="summary-label">CSI 信号质量</text>
+      <view class="summary-value">{{signalQuality}}<text class="summary-unit">% {{signalStatusText}}</text></view>
     </view>
-    <view class="status-hint">{{monitoring ? '设备正在采集 CSI 数据' : '设备处于低功耗休眠状态'}}</view>
-  </view>
-
-  <!-- 开关控制卡片 -->
-  <view class="control-card">
-    <view class="control-row">
-      <view class="control-left">
-        <text class="control-label">实时监测</text>
-        <text class="control-desc">开启后设备将持续采集 WiFi CSI 数据</text>
+    <view class="summary-card">
+      <view class="summary-icon summary-icon-green">
+        <view class="clock-icon">
+          <view class="clock-hand"></view>
+        </view>
       </view>
-      <switch
-        checked="{{monitoring}}"
-        bindchange="onSwitchChange"
-        color="#10b981"
-      />
+      <text class="summary-label">今日守护</text>
+      <view class="summary-value">{{guardHours}}<text class="summary-unit">小时</text></view>
     </view>
   </view>
 
-  <!-- 设备信息卡片 -->
-  <view class="info-card">
-    <view class="info-row">
-      <text class="info-label">设备 ID</text>
-      <text class="info-value">{{deviceId}}</text>
-    </view>
-    <view class="info-divider"></view>
-    <view class="info-row">
-      <text class="info-label">后端状态</text>
-      <view class="info-status">
-        <view class="dot {{backendStatus === '已连接' ? 'online' : 'offline'}}"></view>
-        <text class="info-value">{{backendStatus}}</text>
+  <!-- 设备信息 -->
+  <view class="section-title">
+    <text>我的设备</text>
+    <text class="section-link">查看全部</text>
+  </view>
+  <view class="device-card">
+    <view class="device-visual">
+      <view class="router-icon">
+        <view class="router-antenna"></view>
+        <view class="router-led"></view>
       </view>
     </view>
-    <view class="info-divider"></view>
-    <view class="info-row">
-      <text class="info-label">请求追踪</text>
-      <text class="info-value mono">{{lastRequestId}}</text>
+    <view class="device-copy">
+      <text class="device-name">{{deviceName}}</text>
+      <text class="device-sub">{{deviceModel}} · {{lastSyncText}}</text>
+    </view>
+    <view class="online-state">
+      <view class="online-dot"></view>
+      <text>在线</text>
     </view>
   </view>
 
-  <!-- 底部提示 -->
-  <view class="footer">
-    <text class="footer-text">{{message}}</text>
+  <!-- 电源按钮 -->
+  <view class="power-area">
+    <button class="power-button {{isAlert ? 'power-alert' : ''}}" bindtap="onSwitchChange" data-value="{{!monitoring}}">
+      <view class="power-symbol"></view>
+    </button>
+    <text class="power-caption">{{isAlert ? '轻触暂停本次告警' : '轻触停止守护'}}</text>
   </view>
+
+  <!-- 底部安全区（为 tabBar 留空间） -->
+  <view class="bottom-safe"></view>
 </view>

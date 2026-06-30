@@ -21,6 +21,8 @@ import config
 from models import (
     DeviceCommand,
     DeviceStateResponse,
+    FallAlert,
+    FallAlertResponse,
     HealthResponse,
     SwitchRequest,
     SwitchResponse,
@@ -69,6 +71,16 @@ def on_shutdown():
 #   GET  /api/health         → HealthResponse
 #   GET  /api/device/state   → DeviceStateResponse
 #   POST /api/device/switch  ← SwitchRequest → SwitchResponse
+
+@app.get("/api/device/fall", response_model=FallAlertResponse)
+def get_fall_alert():
+    """获取最新跌倒告警（无告警时 alert 为 null）"""
+    from mqtt_client import get_latest_fall_alert
+    raw = get_latest_fall_alert()
+    if raw is None:
+        return FallAlertResponse(ok=True, alert=None)
+    return FallAlertResponse(ok=True, alert=FallAlert(**raw))
+
 
 @app.get("/api/health", response_model=HealthResponse)
 def health_check():
