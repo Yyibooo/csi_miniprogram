@@ -1,0 +1,63 @@
+<!-- CSI 实时监测控制面板 -->
+<view class="page">
+  <!-- 顶部标题区 -->
+  <view class="header">
+    <view class="header-title">CSI 实时监测</view>
+    <view class="header-subtitle">ESP32-S3 设备控制面板</view>
+  </view>
+
+  <!-- 状态环形指示器 -->
+  <view class="status-ring-container">
+    <view class="status-ring {{monitoring ? 'active' : 'idle'}}">
+      <view class="ring-outer">
+        <view class="ring-glow {{monitoring ? 'active' : ''}}"></view>
+        <view class="ring-inner">
+          <text class="ring-icon">{{monitoring ? '◉' : '○'}}</text>
+          <text class="ring-label">{{monitoring ? '监测中' : '已休眠'}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="status-hint">{{monitoring ? '设备正在采集 CSI 数据' : '设备处于低功耗休眠状态'}}</view>
+  </view>
+
+  <!-- 开关控制卡片 -->
+  <view class="control-card">
+    <view class="control-row">
+      <view class="control-left">
+        <text class="control-label">实时监测</text>
+        <text class="control-desc">开启后设备将持续采集 WiFi CSI 数据</text>
+      </view>
+      <switch
+        checked="{{monitoring}}"
+        bindchange="onSwitchChange"
+        color="#10b981"
+      />
+    </view>
+  </view>
+
+  <!-- 设备信息卡片 -->
+  <view class="info-card">
+    <view class="info-row">
+      <text class="info-label">设备 ID</text>
+      <text class="info-value">{{deviceId}}</text>
+    </view>
+    <view class="info-divider"></view>
+    <view class="info-row">
+      <text class="info-label">后端状态</text>
+      <view class="info-status">
+        <view class="dot {{backendStatus === '已连接' ? 'online' : 'offline'}}"></view>
+        <text class="info-value">{{backendStatus}}</text>
+      </view>
+    </view>
+    <view class="info-divider"></view>
+    <view class="info-row">
+      <text class="info-label">请求追踪</text>
+      <text class="info-value mono">{{lastRequestId}}</text>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="footer">
+    <text class="footer-text">{{message}}</text>
+  </view>
+</view>
