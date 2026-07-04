@@ -5,13 +5,14 @@ Page({
   data: {
     statusBarHeight: 44,
     loading: true,
+    loadError: '',
     user: null as UserProfile | null,
     devices: [] as DeviceSummary[],
-    avatarText: '微',
+    avatarText: '',
     avatarUrl: '',
-    userName: '微信用户',
-    accountText: '账号正常',
-    lastLoginText: '暂无记录',
+    userName: '',
+    accountText: '',
+    lastLoginText: '',
     totalDevices: 0,
   },
 
@@ -28,22 +29,40 @@ Page({
   async loadProfile() {
     try {
       const [user, devices] = await Promise.all([getCurrentUser(), getDevices()])
-      const nickname = user.nickname || '微信用户'
+      const nickname = user.nickname || ''
       this.setData({
         user,
         devices,
         loading: false,
-        avatarText: nickname.slice(0, 1),
+        loadError: '',
+        avatarText: nickname ? nickname.slice(0, 1) : '',
         avatarUrl: user.avatar_url || '',
         userName: nickname,
-        accountText: user.status === 'active' ? '账号正常' : '账号状态异常',
+        accountText: user.status === 'active' ? '账号正常' : '账号已停用',
         lastLoginText: this.formatDate(user.last_login_at),
         totalDevices: devices.length,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('个人中心加载失败', error)
-      this.setData({ loading: false, accountText: '资料暂不可用' })
+      const app = getApp<IAppOption>()
+      this.setData({
+        loading: false,
+        loadError: app.globalData.bootstrapError || (error && error.message) || '用户资料加载失败',
+        accountText: '',
+        userName: '',
+        avatarUrl: '',
+        avatarText: '',
+        devices: [],
+        totalDevices: 0,
+      })
     }
+  },
+
+  onRetry() {
+    const app = getApp<IAppOption & { login: () => void }>()
+    if (!app.globalData.authReady && typeof app.login === 'function') app.login()
+    this.setData({ loading: true, loadError: '' })
+    this.loadProfile()
   },
 
   onTapDeviceManagement() {

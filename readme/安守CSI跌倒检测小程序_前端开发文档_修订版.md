@@ -768,10 +768,11 @@ Authorization: Bearer <token>
       "display_name": "客厅设备",
       "location": "客厅",
       "occurred_at": "2026-07-03T14:30:06+08:00",
+      "result": 1,
       "network_quality": "good",
       "status": "pending",
-      "confidence": 0.92,
-      "duration_seconds": 5
+      "handled_at": null,
+      "remark": null
     }
   ]
 }
@@ -779,23 +780,10 @@ Authorization: Bearer <token>
 
 ---
 
-## 11.7 获取单条跌倒告警
-
-实时事件只携带告警 ID 时，告警页通过该接口读取完整记录。
+## 11.7 确认跌倒告警已处理
 
 ```http
-GET /api/v1/fall-events/{id}
-Authorization: Bearer <token>
-```
-
-响应字段与跌倒记录列表中的单个 item 一致。
-
----
-
-## 11.8 确认跌倒告警已处理
-
-```http
-POST /api/v1/fall-events/{id}/confirm
+PATCH /api/v1/fall-events/{id}
 Authorization: Bearer <token>
 ```
 

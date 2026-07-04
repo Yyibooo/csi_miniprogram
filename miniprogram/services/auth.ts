@@ -1,11 +1,7 @@
-import { runtimeConfig } from '../config/env'
-
-let resolved = !runtimeConfig.authEnabled
-let authSucceeded = resolved
+let resolved = false
+let authSucceeded = false
 let resolveReady: (success: boolean) => void = () => undefined
 let readyPromise = new Promise<boolean>((resolve) => { resolveReady = resolve })
-
-if (resolved) resolveReady(true)
 
 export function markAuthReady(success: boolean): void {
   authSucceeded = success
@@ -18,7 +14,7 @@ export function waitForAuth(): Promise<boolean> {
 }
 
 export function resetAuth(): boolean {
-  if (!runtimeConfig.authEnabled || !resolved) return false
+  if (!resolved) return false
   resolved = false
   authSucceeded = false
   readyPromise = new Promise<boolean>((resolve) => { resolveReady = resolve })

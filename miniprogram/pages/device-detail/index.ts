@@ -1,6 +1,6 @@
 import { runtimeConfig } from '../../config/env'
 import { DeviceDetail, FallEvent, RealtimeEvent } from '../../models/domain'
-import { confirmFallEvent, controlDevice, getDeviceDetail, getFallEvents, qualityText } from '../../utils/api'
+import { controlDevice, getDeviceDetail, getFallEvents, qualityText, updateFallEvent } from '../../utils/api'
 import { realtimeClient } from '../../services/realtime'
 
 const CONTROL_TIMEOUT_MS = 15000
@@ -20,9 +20,7 @@ Page({
     detectionText: '等待启动',
     qualityLabel: '暂无数据',
     lastSeenText: '暂无记录',
-    rssiText: '暂无数据',
     activeAlert: null as FallEvent | null,
-    alertConfidenceText: '--',
     alertTimeText: '',
     _pollingTimer: null as any,
     _controlTimer: null as any,
@@ -40,7 +38,7 @@ Page({
   },
 
   onShow() {
-    if (!runtimeConfig.realtimeEnabled) this.startPolling()
+    if (!runtimeConfig.wsBaseUrl) this.startPolling()
     if (this.data.pendingAction) this.scheduleControlCheck()
   },
 
@@ -102,7 +100,6 @@ Page({
         detectionText: { idle: '等待启动', starting: '正在启动', running: '检测运行中', stopping: '正在停止' }[device.detection_state],
         qualityLabel: qualityText(device.network_quality),
         lastSeenText: this.formatDate(device.last_seen_at),
-        rssiText: device.rssi == null ? '暂无数据' : `${device.rssi} dBm`,
       })
       await this.loadLatestAlert()
     } catch (error: any) {
@@ -119,6 +116,14 @@ Page({
     if (!device || this.data.controlLoading) return
     if (device.state !== 'online') {
       wx.showToast({ title: device.state === 'error' ? '设备异常，无法操作' : '设备离线，无法操作', icon: 'none' })
+      return
+    }
+    if (!device.enabled) {
+      wx.showToast({ title: '设备已被管理员停用', icon: 'none' })
+      return
+    }
+    if (device.fault.code) {
+      wx.showToast({ title: device.fault.message || '设备存在故障，无法操作', icon: 'none' })
       return
     }
     const action = device.detection_state === 'running' ? 'stop' : 'start'
@@ -147,12 +152,10 @@ Page({
       const alerts = await getFallEvents(20)
       const alert = alerts.find((item) => (
         item.device_name === this.data.deviceName &&
-        item.status === 'pending' &&
-        !this.isDismissed(item.id)
+        item.status === 'pending'
       )) || null
       this.setData({
         activeAlert: alert,
-        alertConfidenceText: !alert || alert.confidence == null ? '--' : `${Math.round(alert.confidence * 100)}%`,
         alertTimeText: alert ? this.formatDate(alert.occurred_at) : '',
       })
     } catch (error) {
@@ -170,9 +173,7 @@ Page({
     const alert = this.data.activeAlert
     if (!alert) return
     try {
-      await confirmFallEvent(alert.id)
-      const dismissed = (wx.getStorageSync('dismissed_fall_alerts') || []) as string[]
-      wx.setStorageSync('dismissed_fall_alerts', [String(alert.id), ...dismissed].slice(0, 50))
+      await updateFallEvent(alert.id, 'confirmed')
       this.setData({ activeAlert: null })
       wx.showToast({ title: '已确认安全', icon: 'success' })
     } catch (error: any) {
@@ -208,11 +209,6 @@ Page({
   clearPendingControl() {
     this.stopControlTimer()
     this.setData({ controlLoading: false, pendingAction: '', pendingDeadline: 0 })
-  },
-
-  isDismissed(id: number | string): boolean {
-    const dismissed = (wx.getStorageSync('dismissed_fall_alerts') || []) as string[]
-    return dismissed.includes(String(id))
   },
 
   onBack() { wx.navigateBack() },

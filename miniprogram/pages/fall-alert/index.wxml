@@ -20,7 +20,7 @@
       <view class="detail-grid">
         <view class="detail-item detail-wide"><text class="detail-label">检测时间</text><text class="detail-value">{{occurredText}}</text></view>
         <view class="detail-item"><text class="detail-label">CSI 网络质量</text><text class="detail-value quality-{{alert.network_quality}}">{{qualityLabel}}</text></view>
-        <view class="detail-item"><text class="detail-label">算法置信度</text><text class="detail-value">{{confidenceText}}</text></view>
+        <view class="detail-item"><text class="detail-label">检测结果</text><text class="detail-value">{{resultText}}</text></view>
       </view>
     </view>
 

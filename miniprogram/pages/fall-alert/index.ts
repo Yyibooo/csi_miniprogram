@@ -1,5 +1,5 @@
 import { FallEvent } from '../../models/domain'
-import { confirmFallEvent, getFallEvent, qualityText } from '../../utils/api'
+import { getFallEvents, qualityText, updateFallEvent } from '../../utils/api'
 
 Page({
   data: {
@@ -11,7 +11,7 @@ Page({
     confirming: false,
     qualityLabel: '暂无数据',
     occurredText: '',
-    confidenceText: '--',
+    resultText: '',
   },
 
   onLoad(options: Record<string, string>) {
@@ -23,14 +23,16 @@ Page({
   async loadAlert() {
     try {
       if (!this.data.alertId) throw new Error('缺少告警标识')
-      const alert = await getFallEvent(this.data.alertId)
+      const alerts = await getFallEvents(100)
+      const alert = alerts.find((item) => String(item.id) === this.data.alertId)
+      if (!alert) throw new Error('未找到这条跌倒记录')
       this.setData({
         alert,
         loading: false,
         loadError: '',
         qualityLabel: qualityText(alert.network_quality),
         occurredText: this.formatDate(alert.occurred_at),
-        confidenceText: alert.confidence == null ? '--' : `${Math.round(alert.confidence * 100)}%`,
+        resultText: alert.result === 1 ? '检测到跌倒' : '未知结果',
       })
     } catch (error: any) {
       this.setData({ loading: false, loadError: (error && error.message) || '告警加载失败' })
@@ -42,9 +44,7 @@ Page({
     if (!alert || this.data.confirming) return
     this.setData({ confirming: true })
     try {
-      await confirmFallEvent(alert.id)
-      const dismissed = (wx.getStorageSync('dismissed_fall_alerts') || []) as string[]
-      wx.setStorageSync('dismissed_fall_alerts', [String(alert.id), ...dismissed].slice(0, 50))
+      await updateFallEvent(alert.id, 'confirmed')
       wx.showToast({ title: '已确认安全', icon: 'success' })
       setTimeout(() => wx.switchTab({ url: '/pages/index/index' }), 500)
     } catch (error: any) {

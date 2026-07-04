@@ -22,9 +22,9 @@ function subscribeConnection(listener: ConnectionListener): () => void {
 }
 
 function connect(): void {
-  if (!runtimeConfig.realtimeEnabled || !runtimeConfig.wsBaseUrl || socket) return
+  if (!runtimeConfig.wsBaseUrl || socket) return
   const token = wx.getStorageSync(TOKEN_STORAGE_KEY) as string
-  if (runtimeConfig.authEnabled && !token) return
+  if (!token) return
   manuallyClosed = false
   const separator = runtimeConfig.wsBaseUrl.indexOf('?') >= 0 ? '&' : '?'
   const url = token ? `${runtimeConfig.wsBaseUrl}${separator}token=${encodeURIComponent(token)}` : runtimeConfig.wsBaseUrl

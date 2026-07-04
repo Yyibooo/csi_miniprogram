@@ -4,8 +4,7 @@
     "pages/device-detail/index",
     "pages/device-management/index",
     "pages/fall-alert/index",
-    "pages/mine/mine",
-    "pages/logs/logs"
+    "pages/mine/mine"
   ],
   "window": {
     "navigationBarTextStyle": "black",

@@ -38,7 +38,7 @@ Page({
   onShow() {
     this.selectTab()
     this.loadHome()
-    if (!runtimeConfig.realtimeEnabled) this.startPolling()
+    if (!runtimeConfig.wsBaseUrl) this.startPolling()
   },
 
   onHide() { this.stopPolling() },
@@ -80,9 +80,10 @@ Page({
       })
       await this.loadLatestAlert()
     } catch (error: any) {
+      const app = getApp<IAppOption>()
       this.setData({
         loading: false,
-        loadError: (error && error.message) || '设备信息加载失败',
+        loadError: app.globalData.bootstrapError || (error && error.message) || '设备信息加载失败',
       })
     }
   },
@@ -112,7 +113,12 @@ Page({
     wx.navigateTo({ url: `/pages/fall-alert/index?id=${encodeURIComponent(String(alert.id))}` })
   },
 
-  onRetry() { this.setData({ loading: true }); this.loadHome() },
+  onRetry() {
+    const app = getApp<IAppOption & { login: () => void }>()
+    if (!app.globalData.authReady && typeof app.login === 'function') app.login()
+    this.setData({ loading: true })
+    this.loadHome()
+  },
 
   startPolling() {
     this.stopPolling()

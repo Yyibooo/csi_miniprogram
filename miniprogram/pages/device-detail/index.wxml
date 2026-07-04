@@ -35,7 +35,7 @@
     </view>
 
     <view wx:if="{{activeAlert}}" class="alert-banner" bindtap="onAlertTap">
-      <view class="alert-symbol">!</view><view class="alert-copy"><text class="alert-title">检测到疑似跌倒</text><text class="alert-desc">置信度 {{alertConfidenceText}} · {{alertTimeText}}</text></view><view class="detail-chevron"></view>
+      <view class="alert-symbol">!</view><view class="alert-copy"><text class="alert-title">检测到跌倒事件</text><text class="alert-desc">{{alertTimeText}}</text></view><view class="detail-chevron"></view>
     </view>
     <view wx:if="{{activeAlert}}" class="alert-actions"><button class="safe-action" bindtap="onConfirmSafe">我已确认安全</button><button class="detail-action" bindtap="onAlertTap">查看告警</button></view>
 
@@ -52,14 +52,14 @@
     <view class="status-card">
       <view class="metric-grid">
         <view class="metric"><text class="metric-label">运行状态</text><text class="metric-value">{{detectionText}}</text></view>
-        <view class="metric"><text class="metric-label">Wi-Fi 信号</text><text class="metric-value">{{rssiText}}</text></view>
+        <view class="metric"><text class="metric-label">检测状态</text><text class="metric-value">{{detectionText}}</text></view>
         <view class="metric metric-wide"><text class="metric-label">最近通信</text><text class="metric-value metric-small">{{lastSeenText}}</text></view>
       </view>
     </view>
 
     <view class="notice"><view class="notice-icon">i</view><text>控制请求成功仅代表命令已发送，最终运行状态由设备回执更新。</text></view>
-    <button class="control-button {{device.detection_state === 'running' ? 'stop-button' : ''}}" loading="{{controlLoading}}" disabled="{{controlLoading || device.state !== 'online' || device.detection_state === 'starting' || device.detection_state === 'stopping'}}" bindtap="onControlTap">
-      {{device.state === 'offline' ? '设备离线，无法操作' : device.state === 'error' ? '设备异常，请先检查' : device.detection_state === 'running' ? '停止检测' : device.detection_state === 'starting' ? '正在启动…' : device.detection_state === 'stopping' ? '正在停止…' : '开始检测'}}
+    <button class="control-button {{device.detection_state === 'running' ? 'stop-button' : ''}}" loading="{{controlLoading}}" disabled="{{controlLoading || !device.enabled || device.state !== 'online' || device.fault.code || device.detection_state === 'starting' || device.detection_state === 'stopping'}}" bindtap="onControlTap">
+      {{!device.enabled ? '设备已停用' : device.state === 'offline' ? '设备离线，无法操作' : device.state === 'error' || device.fault.code ? '设备异常，请先检查' : device.detection_state === 'running' ? '停止检测' : device.detection_state === 'starting' ? '正在启动…' : device.detection_state === 'stopping' ? '正在停止…' : '开始检测'}}
     </button>
   </block>
 </view>
