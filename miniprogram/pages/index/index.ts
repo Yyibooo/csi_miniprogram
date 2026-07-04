@@ -1,192 +1,151 @@
-// CSI 跌倒检测 — 监测页面
-import { checkHealth, getDeviceState, sendSwitch, getFallAlert } from '../../utils/api'
+import { runtimeConfig } from '../../config/env'
+import { DeviceSummary, FallEvent, RealtimeEvent } from '../../models/domain'
+import { getDevices, getFallEvents, qualityText } from '../../utils/api'
+import { realtimeClient } from '../../services/realtime'
 
-const DEVICE_ID = 'esp32s3_c_csi_2s_001'
+interface DisplayDevice extends DeviceSummary {
+  stateText: string
+  detectionText: string
+  qualityLabel: string
+  qualityClass: string
+}
 
 Page({
   data: {
-    deviceId: DEVICE_ID,
-    monitoring: false,
-    backendStatus: '未连接',
-
-    // 告警状态
-    isAlert: false,
-    alertConfidence: 0,
-    alertDuration: 0,
-    alertTimestamp: '',
-
-    // 仪表盘
-    gaugeProgress: 0.85,
-    gaugeColor: '#1aa879',
-
-    // 摘要数据（占位）
-    signalQuality: 98,
-    signalStatusText: '优',
-    guardHours: '08:26',
-
-    // 设备
-    deviceName: '客厅监测设备',
-    deviceModel: 'CSI-01',
-    lastSyncText: '最近同步 1 秒前',
-
-    message: '等待连接',
     statusBarHeight: 44,
+    loading: true,
+    loadError: '',
+    devices: [] as DisplayDevice[],
+    totalCount: 0,
+    onlineCount: 0,
+    runningCount: 0,
+    activeAlert: null as FallEvent | null,
+    alertTimeText: '',
     _pollingTimer: null as any,
+    _unsubscribe: null as null | (() => void),
+    _unsubscribeConnection: null as null | (() => void),
   },
 
   onLoad() {
-    const sys = wx.getSystemInfoSync()
-    this.setData({ statusBarHeight: sys.statusBarHeight || 44 })
-    this.checkBackend()
-    this.loadDeviceState()
-
-    // Skyline 自定义 tabBar
-    if (typeof this.getTabBar === 'function') {
-      this.getTabBar((tabBar: any) => {
-        if (tabBar) tabBar.setData({ selected: 0 })
-      })
-    }
+    const system = wx.getSystemInfoSync()
+    this.setData({ statusBarHeight: system.statusBarHeight || 44 })
+    const unsubscribe = realtimeClient.subscribe((event) => this.handleRealtimeEvent(event))
+    const unsubscribeConnection = realtimeClient.subscribeConnection(() => this.loadHome())
+    ;(this as any).data._unsubscribe = unsubscribe
+    ;(this as any).data._unsubscribeConnection = unsubscribeConnection
   },
 
   onShow() {
-    this.startPolling()
-    if (typeof this.getTabBar === 'function') {
-      this.getTabBar((tabBar: any) => {
-        if (tabBar) tabBar.setData({ selected: 0 })
+    this.selectTab()
+    this.loadHome()
+    if (!runtimeConfig.realtimeEnabled) this.startPolling()
+  },
+
+  onHide() { this.stopPolling() },
+
+  onUnload() {
+    this.stopPolling()
+    const unsubscribe = (this as any).data._unsubscribe
+    if (unsubscribe) unsubscribe()
+    const unsubscribeConnection = (this as any).data._unsubscribeConnection
+    if (unsubscribeConnection) unsubscribeConnection()
+  },
+
+  onPullDownRefresh() {
+    this.loadHome().finally(() => wx.stopPullDownRefresh())
+  },
+
+  async loadHome() {
+    try {
+      const devices = await getDevices()
+      const displayDevices = devices.map((device) => ({
+        ...device,
+        stateText: { online: '在线', offline: '离线', error: '异常' }[device.state],
+        detectionText: {
+          idle: '等待检测',
+          starting: '正在启动',
+          running: '检测中',
+          stopping: '正在停止',
+        }[device.detection_state],
+        qualityLabel: qualityText(device.network_quality),
+        qualityClass: `quality-${device.network_quality}`,
+      }))
+      this.setData({
+        loading: false,
+        loadError: '',
+        devices: displayDevices,
+        totalCount: devices.length,
+        onlineCount: devices.filter((device) => device.state === 'online').length,
+        runningCount: devices.filter((device) => device.detection_state === 'running').length,
+      })
+      await this.loadLatestAlert()
+    } catch (error: any) {
+      this.setData({
+        loading: false,
+        loadError: (error && error.message) || '设备信息加载失败',
       })
     }
   },
 
-  onHide() {
-    this.stopPolling()
+  async loadLatestAlert() {
+    try {
+      const alerts = await getFallEvents(1)
+      const alert = alerts.find((item) => item.status === 'pending') || null
+      this.setData({
+        activeAlert: alert,
+        alertTimeText: alert ? this.formatDate(alert.occurred_at) : '',
+      })
+    } catch (error) {
+      console.error('首页告警同步失败', error)
+    }
   },
 
-  onUnload() {
-    this.stopPolling()
+  onDeviceTap(e: WechatMiniprogram.TouchEvent) {
+    const deviceName = String(e.currentTarget.dataset.name || '')
+    if (!deviceName) return
+    wx.navigateTo({ url: `/pages/device-detail/index?deviceName=${encodeURIComponent(deviceName)}` })
   },
 
-  // ── 后端连接 ──────────────────────────
-
-  checkBackend() {
-    checkHealth()
-      .then(() => {
-        this.setData({ backendStatus: '已连接', message: '后端连接成功' })
-      })
-      .catch((err: any) => {
-        console.error('后端健康检查失败:', err)
-        this.setData({ backendStatus: '连接失败', message: '请检查后端是否启动' })
-      })
+  onAlertTap() {
+    const alert = this.data.activeAlert
+    if (!alert) return
+    wx.navigateTo({ url: `/pages/fall-alert/index?id=${encodeURIComponent(String(alert.id))}` })
   },
 
-  loadDeviceState() {
-    getDeviceState()
-      .then((res) => {
-        const state = res.device_state
-        const enabled = state.monitor_enabled
-        this.setData({
-          monitoring: enabled,
-          message: '状态读取成功',
-        })
-      })
-      .catch((err: any) => {
-        console.error('读取状态失败:', err)
-        this.setData({ message: '读取状态失败' })
-      })
-  },
-
-  // ── 跌倒告警轮询 ──────────────────────
+  onRetry() { this.setData({ loading: true }); this.loadHome() },
 
   startPolling() {
     this.stopPolling()
-    const timer = setInterval(() => { this.checkFallAlert() }, 2000)
-    ;(this as any).data._pollingTimer = timer
+    ;(this as any).data._pollingTimer = setInterval(() => this.loadHome(), 5000)
   },
 
   stopPolling() {
     const timer = (this as any).data._pollingTimer
-    if (timer) {
-      clearInterval(timer)
-      ;(this as any).data._pollingTimer = null
+    if (timer) clearInterval(timer)
+    ;(this as any).data._pollingTimer = null
+  },
+
+  handleRealtimeEvent(event: RealtimeEvent) {
+    if (event.event === 'detection.fall-result' && event.data && (event.data as any).fall_detected) {
+      const id = (event.data as any).fall_event_id
+      if (id !== undefined) {
+        wx.navigateTo({ url: `/pages/fall-alert/index?id=${encodeURIComponent(String(id))}` })
+      }
     }
+    this.loadHome()
   },
 
-  checkFallAlert() {
-    getFallAlert()
-      .then((res) => {
-        if (res.alert && res.alert.detected) {
-          this.setData({
-            isAlert: true,
-            alertConfidence: Math.round(res.alert.confidence * 100),
-            alertDuration: Math.round(res.alert.duration_seconds),
-            alertTimestamp: res.alert.timestamp || '',
-            gaugeProgress: 1,
-            gaugeColor: '#ed5d55',
-          })
-        } else if (this.data.isAlert) {
-          // 仅在告警清除时才重置（避免频繁 setData）
-          this.setData({
-            isAlert: false,
-            alertConfidence: 0,
-            alertDuration: 0,
-            alertTimestamp: '',
-            gaugeProgress: 0.85,
-            gaugeColor: '#1aa879',
-          })
-        }
-      })
-      .catch((err: any) => {
-        console.error('Fall alert polling error:', err)
-      })
+  formatDate(value: string): string {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return value
+    const pad = (number: number) => String(number).padStart(2, '0')
+    return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
   },
 
-  onConfirmSafe() {
-    this.setData({
-      isAlert: false,
-      alertConfidence: 0,
-      alertDuration: 0,
-      alertTimestamp: '',
-      gaugeProgress: 0.85,
-      gaugeColor: '#1aa879',
-    })
-    wx.showToast({ title: '已确认安全', icon: 'success' })
-  },
-
-  onContactFamily() {
-    wx.showToast({ title: '功能开发中', icon: 'none' })
-  },
-
-  // ── 开关控制（保留原有逻辑）───────────
-
-  onSwitchChange(e: any) {
-    const enabled = e.detail.value
-    this.setData({
-      monitoring: enabled,
-      message: '正在发送开关信号...',
-    })
-
-    sendSwitch(DEVICE_ID, enabled)
-      .then((res) => {
-        if (res.ok && res.recognized) {
-          this.setData({
-            monitoring: res.monitor_enabled,
-            message: '后端已识别开关信号',
-          })
-        } else {
-          this.rollbackSwitch(enabled, '后端未识别开关信号')
-        }
-      })
-      .catch((err: any) => {
-        console.error('发送开关失败:', err)
-        this.rollbackSwitch(enabled, '发送失败，请检查后端')
-      })
-  },
-
-  /** 发送失败时回滚开关 UI */
-  rollbackSwitch(wasEnabled: boolean, msg: string) {
-    wx.showToast({ title: '控制失败', icon: 'error' as any })
-    this.setData({
-      monitoring: !wasEnabled,
-      message: msg,
-    })
+  selectTab() {
+    if (typeof this.getTabBar === 'function') {
+      const tabBar = this.getTabBar()
+      if (tabBar) tabBar.setData({ selected: 0 })
+    }
   },
 })

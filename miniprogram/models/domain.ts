@@ -1,0 +1,80 @@
+export type DeviceState = 'online' | 'offline' | 'error'
+export type DetectionState = 'idle' | 'starting' | 'running' | 'stopping'
+export type NetworkQuality = 'good' | 'fair' | 'poor' | 'unknown'
+export type FallEventStatus = 'pending' | 'confirmed' | 'false_alarm'
+
+export interface UserProfile {
+  id: number | null
+  nickname: string
+  avatar_url: string
+  phone: string | null
+  status: string
+  last_login_at: string | null
+}
+
+export interface DeviceSummary {
+  device_name: string
+  display_name: string
+  location: string
+  state: DeviceState
+  detection_state: DetectionState
+  network_quality: NetworkQuality
+  last_seen_at: string | null
+  fault_message: string | null
+}
+
+export interface DeviceDetail extends DeviceSummary {
+  enabled: boolean
+  runtime: {
+    state: DetectionState
+    last_status_at: string | null
+  }
+  detection: {
+    state: DetectionState
+    session: string | null
+    network_quality: NetworkQuality
+    last_csi_at: string | null
+  }
+  fault: {
+    code: string | null
+    message: string | null
+  }
+  rssi: number | null
+}
+
+export interface DeviceControlResult {
+  accepted: boolean
+  device_name: string
+  action: 'start' | 'stop'
+  control_state: string
+  session: string | null
+  message: string
+}
+
+export interface FallEvent {
+  id: number | string
+  device_name: string
+  display_name: string
+  location: string
+  occurred_at: string
+  network_quality: NetworkQuality
+  status: FallEventStatus
+  confidence: number | null
+  duration_seconds: number | null
+}
+
+export interface RealtimeEvent<T = Record<string, unknown>> {
+  event: 'device.state.changed' | 'device.fault' | 'detection.network-quality' | 'detection.fall-result'
+  device_name: string
+  server_time?: string
+  data: T
+}
+
+export interface DashboardSummary {
+  online_count: number
+  offline_count: number
+  error_count: number
+  running_count: number
+  today_guard_minutes: number
+}
+

@@ -1,103 +1,18 @@
-<view class="page" style="padding-top: {{statusBarHeight + 20}}px">
-  <!-- Profile Header -->
-  <view class="profile-head">
-    <view class="profile-decor"></view>
-    <view class="profile-main">
-      <view class="profile-avatar">{{avatarText}}</view>
-      <view class="profile-copy">
-        <text class="profile-name">{{userName}}</text>
-        <text class="profile-desc">{{userDesc}}</text>
-      </view>
-      <view class="profile-edit" bindtap="onTapEditProfile">
-        <view class="pencil-icon"></view>
-      </view>
-    </view>
-    <view class="protect-stat">
-      <view class="stat-item">
-        <text class="stat-value">{{onlineDevices}}</text>
-        <text class="stat-label">在线设备</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{totalGuardHours}}</text>
-        <text class="stat-label">累计守护</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-value">{{emergencyContacts}}</text>
-        <text class="stat-label">紧急联系人</text>
-      </view>
+<view class="page" style="padding-top: {{statusBarHeight + 16}}px">
+  <view class="page-heading"><text class="page-kicker">账户与服务</text><text class="page-title">个人中心</text></view>
+
+  <view class="profile-head {{loading ? 'skeleton' : ''}}">
+    <view wx:if="{{!loading}}" class="profile-decor"></view>
+    <view wx:if="{{!loading}}" class="profile-main">
+      <image wx:if="{{avatarUrl}}" class="profile-avatar profile-image" src="{{avatarUrl}}" mode="aspectFill"></image>
+      <view wx:else class="profile-avatar">{{avatarText}}</view>
+      <view class="profile-copy"><text class="profile-name">{{userName}}</text><text class="profile-desc">{{accountText}} · 最近登录 {{lastLoginText}}</text></view>
     </view>
   </view>
 
-  <!-- 守护设置 -->
-  <view class="section-title">
-    <text>守护设置</text>
-    <text class="section-link">信息与提醒</text>
-  </view>
-
+  <view class="section-title"><text>设备</text><text class="section-link">管理已绑定设备</text></view>
   <view class="feature-card">
-    <!-- 微信消息提醒 -->
-    <view class="feature-item" bindtap="onTapWechatBind">
-      <view class="feature-icon feature-icon-wechat">
-        <view class="chat-bubble-sm"></view>
-      </view>
-      <view class="feature-copy">
-        <text class="feature-name">微信消息提醒</text>
-        <text class="feature-desc">跌倒发生时同步推送通知</text>
-      </view>
-      <text class="bind-pill">{{wechatBound ? '已绑定' : '未绑定'}}</text>
-    </view>
-
-    <!-- 紧急联系人 -->
-    <view class="feature-item" bindtap="onTapEmergencyContacts">
-      <view class="feature-icon feature-icon-family">
-        <view class="people-icon-sm"></view>
-      </view>
-      <view class="feature-copy">
-        <text class="feature-name">紧急联系人</text>
-        <text class="feature-desc">管理接收提醒的家人</text>
-      </view>
-      <view class="chevron"></view>
-    </view>
-
-    <!-- 设备管理 -->
-    <view class="feature-item" bindtap="onTapDeviceManagement">
-      <view class="feature-icon feature-icon-device">
-        <view class="device-icon-sm"></view>
-      </view>
-      <view class="feature-copy">
-        <text class="feature-name">设备管理</text>
-        <text class="feature-desc">客厅监测设备 CSI-01</text>
-      </view>
-      <view class="chevron"></view>
-    </view>
-
-    <!-- 异常自动通知 -->
-    <view class="feature-item">
-      <view class="feature-icon feature-icon-privacy">
-        <view class="shield-icon-sm">
-          <view class="shield-check"></view>
-        </view>
-      </view>
-      <view class="feature-copy">
-        <text class="feature-name">异常自动通知</text>
-        <text class="feature-desc">确认跌倒后自动通知家人</text>
-      </view>
-      <switch checked="{{autoNotifyEnabled}}" bindchange="onToggleAutoNotify" color="#1aa879" />
-    </view>
+    <view class="feature-item" bindtap="onTapDeviceManagement"><view class="feature-icon feature-icon-device"><view class="device-icon-sm"></view></view><view class="feature-copy"><text class="feature-name">设备管理</text><text class="feature-desc">{{totalDevices ? totalDevices + ' 台设备已绑定' : '暂未绑定设备'}}</text></view><view class="chevron"></view></view>
   </view>
-
-  <!-- 家人守护圈 -->
-  <view class="family-card">
-    <view class="family-info">
-      <text class="family-title">家人守护圈</text>
-      <text class="family-sub">3 位家人可接收跌倒提醒</text>
-    </view>
-    <view class="family-avatars">
-      <view class="fam-avatar">林</view>
-      <view class="fam-avatar">陈</view>
-      <view class="fam-avatar">王</view>
-    </view>
-  </view>
-
   <view class="bottom-safe"></view>
 </view>

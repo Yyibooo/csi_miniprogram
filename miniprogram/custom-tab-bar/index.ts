@@ -6,7 +6,8 @@ Component({
   methods: {
     switchTab(e: WechatMiniprogram.TouchEvent) {
       const index = Number(e.currentTarget.dataset.index)
-      const url = this.data.selected === 0 ? '/pages/mine/mine' : '/pages/index/index'
+      const urls = ['/pages/index/index', '/pages/mine/mine']
+      const url = urls[index]
       if (index !== this.data.selected) {
         wx.switchTab({ url })
       }

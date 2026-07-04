@@ -1,5 +1,4 @@
 {
-  "usingComponents": {
-    "gauge-ring": "/components/gauge-ring/gauge-ring"
-  }
+  "usingComponents": {},
+  "enablePullDownRefresh": true
 }

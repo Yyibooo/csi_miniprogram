@@ -79,57 +79,6 @@ page {
   font-weight: 600;
 }
 
-.profile-edit {
-  display: grid;
-  width: 60rpx;
-  height: 60rpx;
-  padding: 0;
-  place-items: center;
-  border: 0;
-  border-radius: 20rpx;
-  color: #66736d;
-  background: #f2f5f3;
-  flex: 0 0 auto;
-}
-
-.pencil-icon {
-  width: 26rpx;
-  height: 10rpx;
-  border-radius: 4rpx;
-  background: currentColor;
-  transform: rotate(-42deg);
-}
-
-.protect-stat {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 36rpx;
-  padding-top: 28rpx;
-  border-top: 1rpx solid #edf0ee;
-  text-align: center;
-}
-
-.stat-item {
-  display: grid;
-  place-items: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 780;
-}
-
-.stat-label {
-  display: block;
-  margin-top: 8rpx;
-  color: #9aa39f;
-  font-size: 16rpx;
-  font-weight: 600;
-}
-
 /* ── Section Title ──────────────────────── */
 
 .section-title {
@@ -180,73 +129,9 @@ page {
   border-radius: 22rpx;
 }
 
-.feature-icon-wechat {
-  color: #fff;
-  background: #18b85b;
-}
-
-.feature-icon-family {
-  color: #ed5d55;
-  background: #fff0ef;
-}
-
 .feature-icon-device {
   color: #4e78e8;
   background: #eef3ff;
-}
-
-.feature-icon-privacy {
-  color: #e5a21a;
-  background: #fff7df;
-}
-
-.chat-bubble-sm {
-  position: relative;
-  width: 30rpx;
-  height: 24rpx;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.chat-bubble-sm::before {
-  content: "";
-  position: absolute;
-  right: 2rpx;
-  bottom: -4rpx;
-  width: 8rpx;
-  height: 8rpx;
-  background: currentColor;
-  transform: rotate(25deg);
-}
-
-.people-icon-sm {
-  position: relative;
-  width: 38rpx;
-  height: 32rpx;
-}
-
-.people-icon-sm::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  background: currentColor;
-  transform: translateX(-50%);
-  box-shadow: -12rpx 6rpx 0 -2rpx currentColor, 12rpx 6rpx 0 -2rpx currentColor;
-}
-
-.people-icon-sm::after {
-  content: "";
-  position: absolute;
-  right: 2rpx;
-  bottom: 0;
-  left: 2rpx;
-  height: 14rpx;
-  border-radius: 18rpx 18rpx 6rpx 6rpx;
-  background: currentColor;
 }
 
 .device-icon-sm {
@@ -256,24 +141,6 @@ page {
   border-radius: 8rpx;
 }
 
-.shield-icon-sm {
-  position: relative;
-  width: 30rpx;
-  height: 36rpx;
-  border: 4rpx solid currentColor;
-  border-radius: 16rpx 16rpx 20rpx 20rpx;
-}
-
-.shield-check {
-  position: absolute;
-  top: 6rpx;
-  left: 50%;
-  width: 6rpx;
-  height: 12rpx;
-  border-right: 4rpx solid currentColor;
-  border-bottom: 4rpx solid currentColor;
-  transform: translateX(-50%) rotate(42deg);
-}
 
 .feature-copy {
   min-width: 0;
@@ -297,16 +164,6 @@ page {
   white-space: nowrap;
 }
 
-.bind-pill {
-  padding: 10rpx 16rpx;
-  color: #0b9950;
-  font-size: 16rpx;
-  font-weight: 750;
-  border-radius: 18rpx;
-  background: #e9f8ef;
-  flex: 0 0 auto;
-}
-
 .chevron {
   width: 14rpx;
   height: 14rpx;
@@ -316,65 +173,14 @@ page {
   flex: 0 0 auto;
 }
 
-/* ── Family Card ────────────────────────── */
-
-.family-card {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 20rpx;
-  width: 100%;
-  padding: 26rpx;
-  border: 1rpx solid #ffdfdc;
-  border-radius: 34rpx;
-  background: #fff8f7;
-  margin-bottom: 24rpx;
-}
-
-.family-title {
-  display: block;
-  color: #b34740;
-  font-size: 20rpx;
-  font-weight: 700;
-}
-
-.family-sub {
-  display: block;
-  margin-top: 8rpx;
-  color: #b97a76;
-  font-size: 16rpx;
-  font-weight: 600;
-}
-
-.family-avatars {
-  display: flex;
-  padding-right: 8rpx;
-}
-
-.fam-avatar {
-  display: grid;
-  width: 54rpx;
-  height: 54rpx;
-  margin-right: -12rpx;
-  place-items: center;
-  border: 4rpx solid #fff;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 16rpx;
-  font-weight: 750;
-  background: #58746a;
-}
-
-.fam-avatar:nth-child(2) {
-  background: #d8866f;
-}
-
-.fam-avatar:nth-child(3) {
-  background: #6b82b6;
-}
-
 /* ── Bottom Safe Area ───────────────────── */
 
 .bottom-safe {
   height: 200rpx;
 }
+
+.page-heading { width:100%; margin-bottom:28rpx; }
+.page-kicker { display:block; color:#89958f; font-size:20rpx; font-weight:600; }
+.page-title { display:block; margin-top:8rpx; font-size:42rpx; font-weight:800; letter-spacing:-1rpx; }
+.profile-head.skeleton { min-height:300rpx; border:0; }
+.profile-image { display:block; padding:0; object-fit:cover; }

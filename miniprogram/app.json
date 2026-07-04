@@ -1,12 +1,17 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/device-detail/index",
+    "pages/device-management/index",
+    "pages/fall-alert/index",
     "pages/mine/mine",
     "pages/logs/logs"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationStyle": "custom"
+    "navigationStyle": "custom",
+    "backgroundColor": "#f3f6f4",
+    "backgroundTextStyle": "dark"
   },
   "tabBar": {
     "custom": true,
