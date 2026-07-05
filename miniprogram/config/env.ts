@@ -14,12 +14,10 @@ const ACTIVE_ENV: AppEnvironment = 'development'
 
 const environments: Record<AppEnvironment, RuntimeConfig> = {
   development: {
-    // 示例：http://192.168.1.20:5000
-    apiBaseUrl: '',
-    // 示例：ws://192.168.1.20:5000/ws/v1/events
-    wsBaseUrl: '',
-    requestTimeout: 10000,
-  },
+  apiBaseUrl: 'http://192.168.101.48:5000',
+  wsBaseUrl: 'ws://192.168.101.48:5000/ws/v1/events',
+  requestTimeout: 10000,
+},
   production: {
     // 示例：https://api.example.com
     apiBaseUrl: '',

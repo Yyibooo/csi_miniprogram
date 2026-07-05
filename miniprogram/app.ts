@@ -17,7 +17,7 @@ App<IAppOption>({
 
   onLaunch() {
     this.clearBusinessData()
-    this.login()
+    this.restoreSession()
   },
 
   onShow() {
@@ -27,42 +27,66 @@ App<IAppOption>({
     }
   },
 
-  login() {
-    if ((this as any)._loginInProgress) return
+  async restoreSession() {
+    if ((this as any)._restoreInProgress) return
+    ;(this as any)._restoreInProgress = true
+    const token = wx.getStorageSync(TOKEN_STORAGE_KEY) as string
+    try {
+      if (token) {
+        this.globalData.token = token
+        this.globalData.authReady = true
+        markAuthReady(true)
+        const restored = await this.bootstrapBusinessData()
+        if (restored) {
+          realtimeClient.connect()
+          return
+        }
+      }
+      if (!this.globalData.authReady) await this.login(false)
+    } finally {
+      ;(this as any)._restoreInProgress = false
+    }
+  },
+
+  async login(createIfMissing = true): Promise<boolean> {
+    if ((this as any)._loginInProgress) return false
     ;(this as any)._loginInProgress = true
     realtimeClient.close()
     resetAuth()
-    wx.login({
-      success: async ({ code }) => {
-        if (!code) {
-          this.finishAuth(false, '微信登录未返回有效凭证')
-          return
-        }
-        try {
-          const response = await loginWithWechat(code)
-          wx.setStorageSync(TOKEN_STORAGE_KEY, response.access_token)
-          this.globalData.token = response.access_token
-          this.globalData.isNewUser = response.user.is_new_user
-          this.globalData.authReady = true
-          markAuthReady(true)
-          await this.bootstrapBusinessData()
-          realtimeClient.connect()
-        } catch (error: any) {
-          const message = (error && error.message) || '微信登录失败'
-          this.finishAuth(false, message)
-        } finally {
-          ;(this as any)._loginInProgress = false
-        }
-      },
-      fail: () => {
-        ;(this as any)._loginInProgress = false
-        this.finishAuth(false, '无法调用微信登录')
-      },
+    try {
+      const code = await this.getWechatLoginCode()
+      const response = await loginWithWechat(code, createIfMissing)
+      wx.setStorageSync(TOKEN_STORAGE_KEY, response.access_token)
+      this.globalData.token = response.access_token
+      this.globalData.isNewUser = response.user.is_new_user
+      this.globalData.authReady = true
+      markAuthReady(true)
+      await this.bootstrapBusinessData()
+      realtimeClient.connect()
+      return true
+    } catch (error: any) {
+      const isUnregistered = error && error.code === 'USER_NOT_REGISTERED'
+      this.finishAuth(false, isUnregistered ? '' : (error && error.message) || '微信登录失败')
+      return false
+    } finally {
+      ;(this as any)._loginInProgress = false
+    }
+  },
+
+  getWechatLoginCode(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success: ({ code }) => {
+          if (code) resolve(code)
+          else reject(new Error('微信登录未返回有效凭证'))
+        },
+        fail: () => reject(new Error('无法调用微信登录')),
+      })
     })
   },
 
-  async bootstrapBusinessData() {
-    if (!this.globalData.authReady || (this as any)._bootstrapInProgress) return
+  async bootstrapBusinessData(): Promise<boolean> {
+    if (!this.globalData.authReady || (this as any)._bootstrapInProgress) return false
     ;(this as any)._bootstrapInProgress = true
     this.globalData.bootstrapReady = false
     this.globalData.bootstrapError = ''
@@ -76,9 +100,11 @@ App<IAppOption>({
       this.globalData.devices = devices
       this.globalData.fallEvents = fallEvents
       this.globalData.bootstrapReady = true
+      return true
     } catch (error: any) {
       this.clearBusinessData()
       this.globalData.bootstrapError = (error && error.message) || '业务数据加载失败'
+      return false
     } finally {
       ;(this as any)._bootstrapInProgress = false
     }

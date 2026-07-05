@@ -12,7 +12,7 @@ import { resetAuth, waitForAuth } from '../services/auth'
 
 interface ListResponse<T> { items: T[] }
 
-interface LoginResponse {
+export interface LoginResponse {
   access_token: string
   expires_in: number
   user: {
@@ -55,7 +55,7 @@ async function request<T>(path: string, options: Partial<WechatMiniprogram.Reque
   }
   if (path !== '/api/v1/auth/wechat-login') {
     const authenticated = await waitForAuth()
-    if (!authenticated) throw createApiError('微信登录失败，请重试', 'AUTH_REQUIRED', 401)
+    if (!authenticated) throw createApiError('请先在我的页面登录', 'AUTH_REQUIRED', 401)
   }
   const token = wx.getStorageSync(TOKEN_STORAGE_KEY) as string
   return new Promise((resolve, reject) => {
@@ -76,10 +76,9 @@ async function request<T>(path: string, options: Partial<WechatMiniprogram.Reque
         }
         if (response.statusCode === 401) {
           wx.removeStorageSync(TOKEN_STORAGE_KEY)
-          if (resetAuth()) {
-            const app = getApp<IAppOption & { login: () => void }>()
-            if (typeof app.login === 'function') app.login()
-          }
+          resetAuth()
+          const app = getApp<IAppOption & { finishAuth?: (success: boolean, message?: string) => void }>()
+          if (typeof app.finishAuth === 'function') app.finishAuth(false, '登录状态已过期，请重新登录')
         }
         reject(createApiError(
           (body && body.message) || `请求失败（${response.statusCode}）`,
@@ -92,10 +91,10 @@ async function request<T>(path: string, options: Partial<WechatMiniprogram.Reque
   })
 }
 
-export function loginWithWechat(code: string): Promise<LoginResponse> {
+export function loginWithWechat(code: string, createIfMissing = true): Promise<LoginResponse> {
   return request<LoginResponse>('/api/v1/auth/wechat-login', {
     method: 'POST',
-    data: { code },
+    data: { code, create_if_missing: createIfMissing },
   })
 }
 
@@ -107,6 +106,13 @@ export function updateCurrentUserProfile(profile: { nickname?: string; avatar_ur
   return request<UserProfile>('/api/v1/me/profile', {
     method: 'PATCH' as any,
     data: profile,
+  })
+}
+
+export function updateCurrentUserPhone(code: string): Promise<UserProfile> {
+  return request<UserProfile>('/api/v1/me/phone', {
+    method: 'POST',
+    data: { code },
   })
 }
 
